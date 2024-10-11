@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./ProductList.css";
 import CartItem from "./CartItem";
 import { addItem } from "./CartSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 function ProductList() {
   const [showCart, setShowCart] = useState(false);
@@ -10,6 +10,11 @@ function ProductList() {
   const [addedToCart, setAddedToCart] = useState({});
 
   const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
+  const totalQuantityCounter = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   const plantsArray = [
     {
@@ -349,6 +354,9 @@ function ProductList() {
                     id="mainIconPathAttribute"
                   ></path>
                 </svg>
+                <span className="cart_quantity_count">
+                  {totalQuantityCounter}
+                </span>
               </h1>
             </a>
           </div>
@@ -362,25 +370,32 @@ function ProductList() {
                 <div>{category.category}</div>
               </h1>
               <div className="product-list">
-                {category.plants.map((plant, plantIndex) => (
-                  <div className="product-card" key={plantIndex}>
-                    <img
-                      src={plant.image}
-                      alt={plant.name}
-                      className="product-image"
-                    />
-                    <div className="product-title">{plant.name}</div>
-                    <div className="product-price">{plant.cost}</div>
-                    <div>{plant.description}</div>
+                {category.plants.map((plant, plantIndex) => {
+                  const isInCart = cartItems.some(
+                    (item) => item.name === plant.name
+                  );
 
-                    <button
-                      className="product-button"
-                      onClick={() => handleAddToCart(plant)}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                ))}
+                  return (
+                    <div className="product-card" key={plantIndex}>
+                      <img
+                        src={plant.image}
+                        alt={plant.name}
+                        className="product-image"
+                      />
+                      <div className="product-title">{plant.name}</div>
+                      <div className="product-price">{plant.cost}</div>
+                      <div>{plant.description}</div>
+
+                      <button
+                        className="product-button"
+                        onClick={() => handleAddToCart(plant)}
+                        disabled={isInCart}
+                      >
+                        {isInCart ? "Added to Cart" : "Add to Cart"}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
